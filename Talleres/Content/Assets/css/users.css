@@ -1,0 +1,50 @@
+﻿#usersCnt #header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(55,55,55,0.5);
+    border-spacing: 10px;
+}
+.btn {
+    color:white; 
+}
+#users_info {
+display: none;
+}
+#userModificar {
+display: block;
+}
+#userModificar #modifPass {
+    display: none;
+    text-align: center;
+    font-size: 13px;
+    font-style:italic;
+    color: darkred;
+ }
+#userModificar input, select {
+   padding-left: 5px;
+   margin-left: 10px;
+   height: 30px !important;
+   width: 100% !important;
+}
+#userModificar .col-2 {
+    padding-left: 0px;
+}
+#loadingIcon {
+    width: 100%;
+    height: 70vh;
+
+}
+    #loadingIcon .fa-spinner, #loadingIcon p {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+    }
+
+#tablaContainer {
+    display:none;
+}
+#loadingIcon p {
+    margin-top: 60px;
+    margin-left: 15px;
+}

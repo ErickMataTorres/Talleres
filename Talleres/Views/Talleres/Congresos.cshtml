@@ -1,0 +1,424 @@
+﻿@{
+    ViewBag.Title = "Admin";
+    Layout = "~/Views/Shared/_Admin.cshtml";
+}
+
+<div class="container-fluid" id="usersCnt">
+    <div class="container" style="margin-top: 30px;">
+        <div class="row" id="header">
+            <div class="col-lg-8">
+                <h2>Administrador de Congresos</h2>
+            </div>
+            <div class="col-lg-2">
+                <button type="button" id="userAgregar" class="btn btn-primary"><i class="fas fa-plus" style="margin-right: 10px;"></i>Agregar Nuevo taller</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="container">
+            <div class="col-12">
+                <div id="loadingIcon">
+                    <i class="fas fa-spinner fa-pulse fa-2x"></i>
+                </div>
+                <div id="tablaContainer">
+                    <table id="users" class="table table-striped table-bordered" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nombre</th>
+                                <th>Estado</th>
+                                <th></th>
+
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@* Modificar taller *@
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid" id="userModificar">
+                    <form id="modifForm">
+                        <div class="row">
+                            <div class="col-2">
+                                <p>Nombre: </p>
+                            </div>
+                            <div class="col-10">
+                                <input type="text" maxlength="250" placeholder="..." id="tb_Nombres" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-2">
+                                <p>Estado: </p>
+                            </div>
+                            <div class="col-10">
+                                <select id="cb_turno">
+                                    <option selected disabled>Elije una opción</option>
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn_Guardar" class="btn btn-primary">Guardar Cambios</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts{
+    @*<script src="~/Scripts/recibo.js"></script>*@
+    <script>
+        var opc = 0;
+        var selectedId = 0;
+        var apiUrl = "http://webinar.rimgps.com/registro";
+        $(document).ready(function () {
+            getProfesores();
+            //inicializacion del datatable
+            $url = apiUrl + '/api/congresos/obtener';
+            var table = $('#users').DataTable({
+                "ajax": { "url": $url, dataSrc: "" },
+                "pageLength": 7,
+                "columns": [
+                    { "data": "Id" },
+                    { "data": "Nombre" },
+
+
+                ],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json"
+                },
+                "columnDefs": [{
+                    "targets": 3,
+                    "data": null,
+                    "defaultContent": "<div class='d-flex justify-content-center'><button id='modify' class='btn bg-warning' data-toggle='modal' data-target='#modifyForm'>Modificar</button></div>"
+                },
+                {
+                    "targets": 2,
+                    "data": null,
+                    "defaultContent": "<div class='d-flex justify-content-center'><p class='dataEstado'></p></div>"
+                },
+                {
+                    "targets": [0],
+                    "visible": false
+                },
+                ],
+                "createdRow": function (row, data, index) {
+                    if (data.Estado == 1) {
+                        $("#status", row).html("Borrar");
+                        $("#status", row).addClass("bg-success");
+                    } else {
+                        $("#status", row).html("Borrar");
+                        $("#status", row).addClass("bg-danger");
+                    }
+
+                    data.Estado == 0 ? $(".dataEstado", row).html("Inactivo") : $(".dataEstado", row).html("Activo");
+
+
+                },
+                "initComplete": function (settings, json) {
+
+                    $(".row #loadingIcon").remove();
+                    $("#tablaContainer").css("display", "block");
+                }
+            });
+
+            //Accones al dar click en el botòn de estado
+            $("#users tbody").on('click', '#status', function () {
+                var data = table.row($(this).parents('tr')).data();
+
+                //Si el usuario esta activo se le mostrará una advertencia para que confirme si realmente quiere cambiar el estado del usuario, si acepta se cambiara el estado a inactivo y si el estado es inactivo de inicio se cambiara a activo sin necesidad de una confirmación previa.
+                swal({
+                    title: '¿Estás seguro?',
+                    text: "Se va a borrar el taller",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Confirmar'
+                }).then((result) => {
+                    if (result.value) {
+                        var row_id = data.Id;
+                        var status = 0;
+                        state_User(row_id);
+
+
+                    }
+                });
+
+
+            });
+
+            //Accion de la modal "modificar"
+            $("#users tbody").on('click', '#modify', function () {
+                var data = table.row($(this).parents('tr')).data();
+                selectedId = data.Id;
+                $("#userModal #tb_Nombres").val(data.Nombre),
+                    $("#userModal #cb_turno").val(data.Estado);
+                $("#cb_turno").css("display", "block");
+                $('#userModal').modal('show');
+                $('#userModal .modal-title').text('Modificar Taller');
+                $('#userModal #modifPass').css('display', 'block');
+                $("#userModal #tb_Correo").prop("disabled", false);
+                opc = 2;
+            });
+
+            //Accion de la modal "Agregar"
+            $("#userAgregar").click(function () {
+                $('#userModal').modal('show');
+                $("#cb_turno").css("display", "none");
+                $('#userModal .modal-title').text('Agregar Nuevo Congreso');
+                opc = 1;
+
+            });
+
+            $("#congresoAgregar").click(function () {
+                $('#congresoModal').modal('show');
+                $('#congresoModal .modal-title').text('Congresos');
+
+            });
+
+            //Click en boton guardar
+            $("#btn_Guardar").click(function () {
+                if ($("#userModal #tb_Nombres").val().length > 0) {
+                    guardarUsuario(opc);
+                } else {
+                    swal({
+                        type: 'error',
+                        title: "Por favor llene todos los campos correctamente.",
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+
+
+            });
+
+            $('#userModal').on('hidden.bs.modal', function (e) {
+                Clean();
+
+            })
+
+            //Limpiar los campos del modal
+            function Clean() {
+                $("#userModal #userModificar input").val("")
+                $('#userModal #modifPass').css('display', 'none');
+                $("#userModal #userModificar select").val('Selecciona una opción...');
+                $("#userModal #tb_Correo").prop("disabled", false);
+            }
+
+            //Funcion para guardar o modificar usuarios
+            function guardarUsuario(opc) {
+
+
+                switch (opc) {
+                    case 1:
+                        if ($("#userModal #tb_Nombres").val().length > 0) {
+                            var data = {
+                                Nombre: $("#userModal #tb_Nombres").val(),
+                            }
+
+                            var url = apiUrl + '/api/congresos/guardar?Nombre=' + data.Nombre;
+                            $.ajax({
+                                url: url,
+                                type: 'GET',
+                                dataType: 'text',
+                                data: data,
+                                success: function (d) {
+                                    //manejo de mensajes regresados por ajax.
+                                    d = JSON.parse(d);
+                                    if (d.Estado == 1) {
+                                        swal({
+                                            type: 'success',
+                                            title: "Se ha agregado el Congreso con exito.",
+                                            showConfirmButton: false,
+                                            timer: 1500
+                                        });
+                                        table.ajax.reload();
+                                    } else {
+                                        if (d.Estado == 0) {
+                                            swal({
+                                                type: 'error',
+                                                title: "Ha ocurrido un error al agregar el Congreso.",
+                                                showConfirmButton: false,
+                                                timer: 1500
+                                            });
+                                        }
+                                    }
+                                    Clean();
+                                },
+
+                            });
+                        } else {
+                            swal({
+                                type: 'error',
+                                title: "Por favor llene todos los campos.",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        }
+                        break;
+                    case 2:
+
+                        var data = {
+                            Id: selectedId,
+                            Nombre: $("#userModal #tb_Nombres").val(),
+                            Estado: $("#userModal #cb_turno").val(),
+
+                        }
+                        var url = apiUrl + '/api/congresos/modificar?Id=' + data.Id + '&Nombre=' + data.Nombre + '&Estado=' + data.Estado;
+                        $.ajax({
+                            url: url,
+                            type: 'Get',
+                            dataType: 'text',
+                            data: data,
+                            success: function (d) {
+                                //manejo de mensajes regresados por ajax.
+                                d = JSON.parse(d);
+                                if (d.Estado == 1) {
+                                    swal({
+                                        type: 'success',
+                                        title: "Se ha modificado el Congreso con exito.",
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                    table.ajax.reload();
+                                } else {
+                                    swal({
+                                        type: 'error',
+                                        title: "Ha ocurrido un error al modificar el Congreso.",
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                }
+                            },
+                        });
+
+                        break;
+                }
+            }
+
+            //Cambiar el estado del usuario
+            function state_User(id) {
+                var data = {
+                    Id: id,
+                }
+
+
+                var url = apiUrl + '/api/talleres/borrarTalleres/';
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    dataType: 'text',
+                    data: data,
+                    success: function (d) {
+                        //manejo de mensajes regresados por ajax.
+                        d = JSON.parse(d);
+                        if (d.Estado == 1) {
+                            swal({
+                                type: 'success',
+                                title: "Se ha borrado el taller con exito.",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            table.ajax.reload();
+                        } else {
+                            swal({
+                                type: 'error',
+                                title: "Ha ocurrido un error al borrar al taller.",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                        }
+                    },
+
+                });
+
+            }
+
+            function getProfesores() {
+
+                $.getJSON(apiUrl + "/api/talleres/obtenerProfesores", function (d) {
+                    $("#profesores").append("<option selected disabled>Elije un profesor</option>");
+                    for (var i in d) {
+                        $("#profesores").append("<option value='" + d[i].Id + "'>" + d[i].Nombre + "</option>");
+                    }
+
+                });
+            }
+            function TryParseInt(str, defaultValue) {
+                var retValue = defaultValue;
+                if (str !== null) {
+                    if (str.length > 0) {
+                        if (!isNaN(str)) {
+                            retValue = parseInt(str);
+                        }
+                    }
+                }
+                return retValue;
+            }
+
+            function generateInscritos(json) {
+                $("#tblInscritos").append('<table cellpadding="0" cellspacing="0" border="0" class="dataTable table table-striped" id="inscritosContent" style="width: 100%;"> </table>');
+
+
+                $('#inscritosContent').DataTable({
+                    data: json,
+                    columns: [
+                        { "title": "Nombres", "data": "Nombres" },
+                        { "title": "Matricula", "data": "Matricula" },
+                        { "title": "Carrera", "data": "Carrera" },
+                        { "title": "Telefono", "data": "Telefono" },
+                        { "title": "Folio Recibo", "data": "FolioRecibo" },
+
+                    ],
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/Spanish.json"
+                    },
+                    "initComplete": function (settings, json) {
+
+                        $('#Inscritos').modal('show');
+                    },
+                    "error": function () {
+                        swal.fire({
+                            type: 'warning',
+                            title: "No se ha podido establecer conexión con el servidor.",
+                            text: "Intente de nuevo más tarde.",
+                            showConfirmButton: false,
+                        });
+
+                    }
+                });
+
+            }
+            //Termina script
+        });
+    </script>
+
+
+}

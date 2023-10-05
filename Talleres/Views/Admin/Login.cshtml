@@ -1,0 +1,117 @@
+﻿@{
+
+    Layout = "~/Views/Shared/_Login.cshtml";
+}
+<div class="container" id="formLogin" style="max-width: 350px">
+
+    <div class="panel">
+        <h2>Iniciar Sesión</h2>
+        <p>Por favor escriba su usuario y contraseña</p>
+    </div>
+    <div id="Login">
+        <div class="form-group">
+
+            <input type="text" class="form-control" id="inputUser" placeholder="Usuario">
+        </div>
+        <div class="form-group">
+            <input type="password" class="form-control" id="inputPassword" placeholder="Contraseña">
+        </div>
+        <div class="forgot">
+
+        </div>
+        <button id="btn_Login" class="btn btn-primary">Iniciar sesión</button>
+    </div>
+
+
+</div>
+
+
+@section scripts{
+    <script>
+        //var apiUrl = "http://webinar.rimgps.com/registro";
+        var apiUrl = "http://localhost:57731";
+
+        $(document).on('keypress', function (e) {
+            if (e.which == 13) {
+                login();
+
+            }
+        });
+        $("#btn_Login").click(function () {
+            login();
+        });
+
+        function login() {
+            $("#btn_Login").prop("disabled", true);
+            if ($("#inputUser").val().length > 0 && $("#inputPassword").val().length > 0) {
+                var data = {
+                    Usuario: $("#inputUser").val(),
+                    Contrasena: $("#inputPassword").val()
+                }
+
+                var url = apiUrl + '/admin/log';
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    dataType: 'text',
+                    data: data,
+                    success: function (d) {
+                        d = JSON.parse(d);
+                        switch (d.Estado) {
+                            case 0:
+                                swal.fire({
+                                    type: 'error',
+                                    title: "Usuario o contraseña incorrecta.",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                badUser();
+                                break;
+                            case 2:
+
+                                swal.fire({
+                                    type: 'error',
+                                    title: "Ha ocurrido un error intente de nuevo más tarde.",
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                });
+                                badUser();
+                                break;
+
+                            case 1:
+
+                                window.location.href = "@Url.Action("Home", "Admin")";
+
+                                break;
+                            
+                        }
+
+
+
+
+                    }
+                });
+            } else {
+                swal({
+                    type: 'error',
+                    title: "Llene todos los campos correctamente.",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                badUser()
+            }
+
+        }
+
+        function badUser() {
+            $("#btn_Login").prop("disabled", false);
+            $("#inputPassword").val("");
+        }
+
+    </script>
+
+}
+
+
+
+

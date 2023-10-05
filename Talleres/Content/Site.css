@@ -1,0 +1,73 @@
+﻿@import url('../Content/Assets/css/users.css');
+body {
+
+}
+
+#tblInscritos {
+    overflow-x: scroll;
+}
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+#mainSlide {
+    width: 100% !important;
+    height: 300px !important;
+}
+
+
+.navbar {
+    background-color: #273646;
+    border-radius: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+.btn {
+    border: 2px solid #273646;
+    border-radius: 0px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: #273646;
+}
+    .btn:hover, .btnTurnos:hover {
+        background-color: #273646;
+        color: white;
+    }
+#tbl_talleres {
+    border: 2px solid #273646;
+    border-top: 0px;
+    padding-top: 15px !important;
+}
+.btn_select, #btn_Guardar {
+    color: white;
+    background-color: #273646;
+    border-radius: 5px;
+    border: 0px;
+}
+    .btn_select:hover, #btn_Guardar:hover {
+        color: white;
+        background-color: #632323;
+        border-radius: 5px;
+    }
+#btn_Finalizar {
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top: 0px;
+    padding-top: 10px;
+}
+.btn-secondary {
+    border: none !important;
+    color: white !important;
+    border-radius: 5px;
+}
+.btn-secondary:hover{}
+
+/*Paginacion de  las tablas*/
+.page-item.active .page-link {
+    background-color: #273646;
+    border-color: #273646;
+}
